@@ -94,13 +94,14 @@ function SchoolsTable({ schools }) {
               <Th>Image</Th>
               <Th>School ID</Th>
               <Th>Mobile</Th>
-              <Th>QR</Th>
+              <Th>Kitchen</Th>
+              {/* <Th>QR</Th> */}
               <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
             {schools ? schools.map((school, index) => {
-              const { image, name, id, description } = school;
+              const { image, name, id, description, kitchenId } = school;
               if (!qrRefs.current[name]) {
                 qrRefs.current[name] = React.createRef();
               }
@@ -132,6 +133,11 @@ function SchoolsTable({ schools }) {
                     </VStack>
                   </Td>
                   <Td>
+                    <VStack alignItems='flex-start' spacing={1}>
+                      <Text as='b'>{kitchenId}</Text>
+                    </VStack>
+                  </Td>
+                  {/* <Td>
                     <div ref={qrRefs.current[name]}>
                       <QRCode
                         value={JSON.stringify({
@@ -140,7 +146,7 @@ function SchoolsTable({ schools }) {
                         size={128} // Adjust size as necessary
                       />
                     </div>
-                  </Td>
+                  </Td> */}
                   <Td>
                     <Menu>
                       <MenuButton as={Button} rightIcon={<BiChevronDown />}>

@@ -80,25 +80,27 @@ function OrdersTable({ orders }) {
 
   function formatDate(dateString) {
     const date = new Date(dateString);
-    const day = date.getUTCDate();
+  
+    // Extract local time components
+    const day = date.getDate();
     const month = date.toLocaleString("default", { month: "long" });
-    const year = date.getUTCFullYear();
-    let hours = date.getUTCHours();
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
-
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+  
     // Determine AM/PM and adjust hours to 12-hour format
     const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12 || 12; // Convert to 12-hour format and handle midnight (0 becomes 12)
     hours = String(hours).padStart(2, '0');
-
+  
     // Format day with suffix
     const daySuffix = day % 10 === 1 && day !== 11 ? "st" :
       day % 10 === 2 && day !== 12 ? "nd" :
         day % 10 === 3 && day !== 13 ? "rd" : "th";
-
+  
     return `${day}${daySuffix} ${month} ${year} ${hours}:${minutes}:${seconds} ${ampm}`;
-  }
+  }  
 
   return (
     <SimpleGrid bg='white' p={5} shadow='lg' borderRadius='lg' overflowX='auto'>
@@ -110,7 +112,8 @@ function OrdersTable({ orders }) {
         <Table variant='simple'>
           <Thead>
             <Tr>
-              <Th>School Details</Th>
+              <Th>Route Details</Th>
+              <Th>School Names</Th>
               <Th>Truck Details</Th>
               <Th>Cooker Details</Th>
               <Th>Driver Details</Th>
@@ -125,7 +128,16 @@ function OrdersTable({ orders }) {
               const cookerDetails = getCookerDetails(order);
               return (
                 <Tr key={index}>
-                  <Td><strong>Name: </strong>{school?.name}<br /><strong>Ph no: </strong>{school?.description}</Td>
+                  <Td><strong>Name: </strong>{school?.name}<br />
+                  {/* <strong>Ph no: </strong>{school?.description} */}
+                  </Td>
+                  <Td>
+                    {school.schools.map((group, i) => (
+                      <Text style={{marginBottom: '10px'}} key={i}>
+                        {group + " "},
+                      </Text>
+                    ))}
+                  </Td>
                   <Td><strong>Truck ID: </strong>{truck?.truckId}<br /><strong>No: </strong>{truck?.description}</Td>
                   <Td>
                     {cookerDetails.map((group, i) => (
@@ -136,8 +148,8 @@ function OrdersTable({ orders }) {
                     ))}
                   </Td>
                   <Td>
-                    <strong>Name: </strong>{driver?.name?.charAt(0).toUpperCase() + driver?.name?.slice(1)}<br />
-                    <strong>Email: </strong>{driver?.email}
+                    <strong>Name: </strong>{truck?.driver_name?.charAt(0).toUpperCase() + truck?.driver_name?.slice(1)}<br />
+                    <strong>Contact: </strong>{truck?.driver_number || truck?.driver_email}
                   </Td>
                   <Td>{status}</Td>
                   <Td><Text>{formatDate(createdAt)}</Text></Td>

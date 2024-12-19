@@ -20,23 +20,19 @@ import {
   Image,
   VStack,
   Checkbox,
+  Select
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
 import { useContainerContext } from '../context/container_context';
+import { useKitchenContext } from '../context/kitchen_context';
+import Multiselect from 'multiselect-react-dropdown';
 
 function CreateNewContainerModal() {
   const {
     new_container: {
       containerId,
-      // price,
-      // stock,
       description,
-      // colors,
-      // sizes,
-      // category,
-      // company,
-      // shipping,
-      // featured,
+      kitchenId
     },
     updateNewContainerDetails,
     createNewContainer,
@@ -44,6 +40,17 @@ function CreateNewContainerModal() {
 
   const [imageList, setImageList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { kitchens } = useKitchenContext();
+  const [selectedKitchens, setSelectedKitchens] = useState([]);
+
+  // Handle selection
+  const onSelect = (selectedList) => {
+    setSelectedKitchens(selectedList);
+  };
+
+  const onRemove = (selectedList) => {
+    setSelectedKitchens(selectedList);
+  };
 
   const onDrop = useCallback((acceptedFiles) => {
     acceptedFiles.forEach((file) => {
@@ -74,16 +81,11 @@ function CreateNewContainerModal() {
   };
 
   const handleSubmit = async () => {
+    const selectedNames = selectedKitchens.map((kitchen) => kitchen.kitchenId);
     if (
       !containerId ||
-      // !price ||
-      // !stock ||
-      !description 
-      // ||
-      // colors.length < 1 ||
-      // sizes.length < 1 ||
-      // !category ||
-      // !company
+      !description ||
+      !selectedNames
     ) {
       return toast({
         position: 'top',
@@ -93,28 +95,12 @@ function CreateNewContainerModal() {
         isClosable: true,
       });
     }
-    // if (imageList.length < 1) {
-    //   return toast({
-    //     position: 'top',
-    //     description: 'Add atleast one image',
-    //     status: 'error',
-    //     duration: 5000,
-    //     isClosable: true,
-    //   });
-    // }
     setLoading(true);
     console.log('uploading');
     const container = {
       containerId,
-      // price,
-      // stock,
       description,
-      // colors,
-      // sizes,
-      // category,
-      // company,
-      // shipping,
-      // featured,
+      kitchenId: selectedNames[0],
       images: imageList,
     };
     const responseCreate = await createNewContainer(container);
@@ -163,30 +149,6 @@ function CreateNewContainerModal() {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Price</FormLabel>
-              <Input
-                type='number'
-                placeholder='Container Price'
-                name='price'
-                focusBorderColor='brown.500'
-                value={price}
-                onChange={updateNewContainerDetails}
-              />
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Stock</FormLabel>
-              <Input
-                type='number'
-                placeholder='Container Stock'
-                name='stock'
-                focusBorderColor='brown.500'
-                value={stock}
-                onChange={updateNewContainerDetails}
-              />
-            </FormControl> */}
-
             <FormControl mt={4}>
               <FormLabel>Description</FormLabel>
               <Textarea
@@ -198,52 +160,32 @@ function CreateNewContainerModal() {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Category</FormLabel>
-              <Input
-                placeholder='Container Category'
-                name='category'
-                focusBorderColor='brown.500'
-                value={category}
-                onChange={updateNewContainerDetails}
-              />
-            </FormControl>
-
             <FormControl mt={4}>
-              <FormLabel>Company</FormLabel>
-              <Input
-                placeholder='Container Company'
-                name='company'
-                focusBorderColor='brown.500'
-                value={company}
-                onChange={updateNewContainerDetails}
-              />
+              <FormLabel>Kitchens</FormLabel>
+              <Select
+                placeholder="Select Kitchen"
+                value={selectedKitchens[0]?.kitchenId || ''}
+                onChange={(e) => {
+                  const selectedKitchen = kitchens.find(
+                    (kitchen) => kitchen.kitchenId === e.target.value
+                  );
+                  setSelectedKitchens(selectedKitchen ? [selectedKitchen] : []);
+                }}
+                focusBorderColor="brown.500"
+                width="100%"
+                sx={{
+                  option: {
+                    width: "100%",
+                  },
+                }}
+              >
+                {kitchens.map((kitchen) => (
+                  <option key={kitchen.kitchenId} value={kitchen.kitchenId}>
+                    {kitchen.description}
+                  </option>
+                ))}
+              </Select>
             </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Sizes</FormLabel>
-              <Input
-                placeholder='Container Sizes (comma separated)'
-                name='sizes'
-                focusBorderColor='brown.500'
-                value={sizes}
-                onChange={updateNewContainerDetails}
-              />
-              <FormHelperText>Eg: m, l, xl, xxl, xxxl</FormHelperText>
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Colors</FormLabel>
-              <Input
-                placeholder='Container Colors (comma separated)'
-                name='colors'
-                focusBorderColor='brown.500'
-                value={colors}
-                onChange={updateNewContainerDetails}
-              />
-              <FormHelperText>Eg: red,green,blue</FormHelperText>
-              <FormHelperText>Eg: #FF000,#00FF00,#0000FF</FormHelperText>
-            </FormControl> */}
 
             <FormControl mt={4}>
               <FormLabel>Images</FormLabel>

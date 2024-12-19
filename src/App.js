@@ -12,10 +12,12 @@ import {
   // SingleContainerPage
 } from './pages';
 import SingleContainerPage from './pages/SingleContainerPage';
+import SinglePathwayPage from './pages/SinglePathwayPage';
 import SingleTruckPage from './pages/SingleTruckPage';
 import SingleSchoolPage from './pages/SingleSchoolPage';
 import SingleKitchenPage from './pages/SingleKitchenPage';
 import ContainersPage from './pages/ContainersPage';
+import PathwaysPage from './pages/PathwaysPage';
 import SchoolsPage from './pages/SchoolsPage';
 import TrucksPage from './pages/TrucksPage';
 import KitchensPage from './pages/KitchensPage';
@@ -49,7 +51,9 @@ function App() {
         <PrivateRoute exact path='/containers'>
           <ContainersPage />
         </PrivateRoute>
-
+        <PrivateRoute exact path='/pathways'>
+          <PathwaysPage />
+        </PrivateRoute>
         <PrivateRoute exact path='/containerassign'>
           <ContainerAssigns />
         </PrivateRoute>
@@ -69,6 +73,9 @@ function App() {
         </PrivateRoute>
         <PrivateRoute exact path='/containers/:id'>
           <SingleContainerPage />
+        </PrivateRoute>
+        <PrivateRoute exact path='/pathways/:id'>
+          <SinglePathwayPage />
         </PrivateRoute>
         <PrivateRoute exact path='/trucks/:id'>
           <SingleTruckPage />

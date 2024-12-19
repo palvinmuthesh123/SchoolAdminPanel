@@ -20,9 +20,12 @@ import {
   Image,
   VStack,
   Checkbox,
+  Select
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
 import { useProductContext } from '../context/product_context';
+import { useKitchenContext } from '../context/kitchen_context';
+
 
 function CreateNewProductModal() {
   const {
@@ -41,7 +44,8 @@ function CreateNewProductModal() {
     updateNewProductDetails,
     createNewProduct,
   } = useProductContext();
-
+  const { kitchens } = useKitchenContext();
+  const [selectedKitchens, setSelectedKitchens] = useState([]);
   const [imageList, setImageList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -74,16 +78,11 @@ function CreateNewProductModal() {
   };
 
   const handleSubmit = async () => {
+    const selectedNames = selectedKitchens.map((kitchen) => kitchen.kitchenId);
     if (
       !cookerId 
-      // ||
-      // !price ||
-      // !stock ||
-      // !description ||
-      // colors.length < 1 ||
-      // sizes.length < 1 ||
-      // !category ||
-      // !company
+      ||
+      !selectedNames
     ) {
       return toast({
         position: 'top',
@@ -93,28 +92,13 @@ function CreateNewProductModal() {
         isClosable: true,
       });
     }
-    // if (imageList.length < 1) {
-    //   return toast({
-    //     position: 'top',
-    //     description: 'Add atleast one image',
-    //     status: 'error',
-    //     duration: 5000,
-    //     isClosable: true,
-    //   });
-    // }
+
     setLoading(true);
     console.log('uploading');
     const product = {
       cookerId,
-      // price,
-      // stock,
       description,
-      // colors,
-      // sizes,
-      // category,
-      // company,
-      // shipping,
-      // featured,
+      kitchenId: selectedNames[0],
       images: imageList,
     };
     const responseCreate = await createNewProduct(product);
@@ -164,30 +148,6 @@ function CreateNewProductModal() {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Price</FormLabel>
-              <Input
-                type='number'
-                placeholder='Product Price'
-                name='price'
-                focusBorderColor='brown.500'
-                value={price}
-                onChange={updateNewProductDetails}
-              />
-            </FormControl> */}
-
-            {/* <FormControl mt={4}>
-              <FormLabel>Stock</FormLabel>
-              <Input
-                type='number'
-                placeholder='Product Stock'
-                name='stock'
-                focusBorderColor='brown.500'
-                value={stock}
-                onChange={updateNewProductDetails}
-              />
-            </FormControl> */}
-
             <FormControl mt={4}>
               <FormLabel>Description</FormLabel>
               <Textarea
@@ -199,52 +159,32 @@ function CreateNewProductModal() {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Category</FormLabel>
-              <Input
-                placeholder='Product Category'
-                name='category'
-                focusBorderColor='brown.500'
-                value={category}
-                onChange={updateNewProductDetails}
-              />
-            </FormControl> */}
-
-            {/* <FormControl mt={4}>
-              <FormLabel>Company</FormLabel>
-              <Input
-                placeholder='Product Company'
-                name='company'
-                focusBorderColor='brown.500'
-                value={company}
-                onChange={updateNewProductDetails}
-              />
-            </FormControl> */}
-
-            {/* <FormControl mt={4}>
-              <FormLabel>Sizes</FormLabel>
-              <Input
-                placeholder='Product Sizes (comma separated)'
-                name='sizes'
-                focusBorderColor='brown.500'
-                value={sizes}
-                onChange={updateNewProductDetails}
-              />
-              <FormHelperText>Eg: m, l, xl, xxl, xxxl</FormHelperText>
-            </FormControl> */}
-
-            {/* <FormControl mt={4}>
-              <FormLabel>Colors</FormLabel>
-              <Input
-                placeholder='Product Colors (comma separated)'
-                name='colors'
-                focusBorderColor='brown.500'
-                value={colors}
-                onChange={updateNewProductDetails}
-              />
-              <FormHelperText>Eg: red,green,blue</FormHelperText>
-              <FormHelperText>Eg: #FF000,#00FF00,#0000FF</FormHelperText>
-            </FormControl> */}
+            <FormControl mt={4}>
+              <FormLabel>Kitchens</FormLabel>
+              <Select
+                placeholder="Select Kitchen"
+                value={selectedKitchens[0]?.kitchenId || ''}
+                onChange={(e) => {
+                  const selectedKitchen = kitchens.find(
+                    (kitchen) => kitchen.kitchenId === e.target.value
+                  );
+                  setSelectedKitchens(selectedKitchen ? [selectedKitchen] : []);
+                }}
+                focusBorderColor="brown.500"
+                width="100%"
+                sx={{
+                  option: {
+                    width: "100%",
+                  },
+                }}
+              >
+                {kitchens.map((kitchen) => (
+                  <option key={kitchen.kitchenId} value={kitchen.kitchenId}>
+                    {kitchen.description}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
 
             <FormControl mt={4}>
               <FormLabel>Images</FormLabel>

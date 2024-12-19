@@ -21,24 +21,24 @@ import {
   VStack,
   Checkbox,
   Text,
+  Select
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
 import { useTruckContext } from '../context/truck_context';
+import { useKitchenContext } from '../context/kitchen_context';
 
 function UpdateTruckModal({ id }) {
   const {
     single_truck: {
       truckId = '',
-      // price = '',
-      // stock = 0,
       description = '',
-      // colors = [],
-      // sizes = [],
-      // category = '',
-      // company = '',
+      driver_name = '',
+      // driver_number = '',
+      // driver_email = '',
+      // driver_password = '',
+      route = '',
       images = [],
-      // shipping = false,
-      // featured = false,
+      kitchenId = []
     },
     single_truck_loading,
     fetchTrucks,
@@ -46,9 +46,19 @@ function UpdateTruckModal({ id }) {
     updateExistingTruckDetails,
     updateTruck,
   } = useTruckContext();
-
+  const { kitchens } = useKitchenContext();
+  const [selectedKitchens, setSelectedKitchens] = useState([]);
   const [imageList, setImageList] = useState(images);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if(kitchenId.length>0 && kitchens.length>0) {
+      const preSelectedSchools = kitchens.filter((item) =>
+        kitchenId == item.kitchenId
+      );
+      setSelectedKitchens(preSelectedSchools);
+    }
+  }, [kitchenId, kitchens]);
 
   const onDrop = useCallback((acceptedFiles) => {
     acceptedFiles.forEach((file) => {
@@ -78,16 +88,14 @@ function UpdateTruckModal({ id }) {
   };
 
   const handleSubmit = async () => {
+    const selectedNames = selectedKitchens.map((kitchen) => kitchen.kitchenId);
     if (
       !truckId ||
-      // !price ||
-      // !stock ||
-      !description 
-      // ||
-      // colors.length < 1 ||
-      // sizes.length < 1 ||
-      // !category ||
-      // !company
+      !description ||
+      !driver_name ||
+      // !driver_number ||
+      // !driver_email ||
+      !route
     ) {
       return toast({
         position: 'top',
@@ -97,29 +105,20 @@ function UpdateTruckModal({ id }) {
         isClosable: true,
       });
     }
-    // if (imageList.length < 1) {
-    //   return toast({
-    //     position: 'top',
-    //     description: 'Add atleast one image',
-    //     status: 'error',
-    //     duration: 5000,
-    //     isClosable: true,
-    //   });
-    // }
+
     setLoading(true);
-    const truck = {
+    var truck = {
       truckId,
-      // price,
-      // stock,
       description,
-      // colors,
-      // sizes,
-      // category,
-      // company,
-      // shipping,
-      // featured,
+      driver_name,
+      // driver_number,
+      // driver_email,
+      route,
       images: imageList,
     };
+    if(selectedNames) {
+      Object.assign(truck, {kitchenId: selectedNames[0]})
+    }
     const responseCreate = await updateTruck(id, truck);
     setLoading(false);
     if (responseCreate.success) {
@@ -179,34 +178,10 @@ function UpdateTruckModal({ id }) {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Price</FormLabel>
-              <Input
-                type='number'
-                placeholder='Truck Price'
-                name='price'
-                focusBorderColor='brown.500'
-                value={price}
-                onChange={updateExistingTruckDetails}
-              />
-            </FormControl>
-
             <FormControl mt={4}>
-              <FormLabel>Stock</FormLabel>
+              <FormLabel>Truck Number</FormLabel>
               <Input
-                type='number'
-                placeholder='Truck Stock'
-                name='stock'
-                focusBorderColor='brown.500'
-                value={stock}
-                onChange={updateExistingTruckDetails}
-              />
-            </FormControl> */}
-
-            <FormControl mt={4}>
-              <FormLabel>Description</FormLabel>
-              <Textarea
-                placeholder='Truck Description'
+                placeholder='Truck Number'
                 name='description'
                 focusBorderColor='brown.500'
                 value={description}
@@ -214,52 +189,76 @@ function UpdateTruckModal({ id }) {
               />
             </FormControl>
 
+            <FormControl mt={4}>
+              <FormLabel>Kitchens</FormLabel>
+              <Select
+                placeholder="Select Kitchen"
+                value={selectedKitchens[0]?.kitchenId || ''}
+                onChange={(e) => {
+                  const selectedKitchen = kitchens.find(
+                    (kitchen) => kitchen.kitchenId === e.target.value
+                  );
+                  setSelectedKitchens(selectedKitchen ? [selectedKitchen] : []);
+                }}
+                focusBorderColor="brown.500"
+                width="100%"
+                sx={{
+                  option: {
+                    width: "100%",
+                  },
+                }}
+              >
+                {kitchens.map((kitchen) => (
+                  <option key={kitchen.kitchenId} value={kitchen.kitchenId}>
+                    {kitchen.description}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl mt={4}>
+              <FormLabel>Driver Name</FormLabel>
+              <Input
+                placeholder='Truck Driver Name'
+                name='driver_name'
+                focusBorderColor='brown.500'
+                value={driver_name}
+                onChange={updateExistingTruckDetails}
+              />
+            </FormControl>
+
             {/* <FormControl mt={4}>
-              <FormLabel>Category</FormLabel>
+              <FormLabel>Driver Number</FormLabel>
               <Input
-                placeholder='Truck Category'
-                name='category'
+                placeholder='Truck Driver Number'
+                name='driver_number'
                 focusBorderColor='brown.500'
-                value={category}
+                value={driver_number}
                 onChange={updateExistingTruckDetails}
               />
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Company</FormLabel>
-              <Input
-                placeholder='Truck Company'
-                name='company'
-                focusBorderColor='brown.500'
-                value={company}
-                onChange={updateExistingTruckDetails}
-              />
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Sizes</FormLabel>
-              <Input
-                placeholder='Truck Sizes (comma separated)'
-                name='sizes'
-                focusBorderColor='brown.500'
-                value={sizes}
-                onChange={updateExistingTruckDetails}
-              />
-              <FormHelperText>Eg: m, l, xl, xxl, xxxl</FormHelperText>
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Colors</FormLabel>
-              <Input
-                placeholder='Truck Colors (comma separated)'
-                name='colors'
-                focusBorderColor='brown.500'
-                value={colors}
-                onChange={updateExistingTruckDetails}
-              />
-              <FormHelperText>Eg: red,green,blue</FormHelperText>
-              <FormHelperText>Eg: #FF000,#00FF00,#0000FF</FormHelperText>
             </FormControl> */}
+
+            {/* <FormControl mt={4}>
+              <FormLabel>Driver Email</FormLabel>
+              <Input
+                placeholder='Truck Driver Email'
+                name='driver_email'
+                focusBorderColor='brown.500'
+                value={driver_email}
+                onChange={updateExistingTruckDetails}
+              />
+            </FormControl> */}
+
+            <FormControl mt={4}>
+              <FormLabel>Route</FormLabel>
+              <Input
+                placeholder='Truck Route'
+                name='route'
+                focusBorderColor='brown.500'
+                value={route}
+                onChange={updateExistingTruckDetails}
+              />
+            </FormControl>
 
             <FormControl mt={4}>
               <FormLabel>Images</FormLabel>
@@ -310,28 +309,6 @@ function UpdateTruckModal({ id }) {
                 })}
               </HStack>
             </FormControl>
-
-            {/* <FormControl mt={4}>
-              <Checkbox
-                name='shipping'
-                colorScheme='brown'
-                isChecked={shipping}
-                onChange={updateExistingTruckDetails}
-              >
-                Shipping
-              </Checkbox>
-            </FormControl>
-
-            <FormControl mt={4}>
-              <Checkbox
-                name='featured'
-                colorScheme='brown'
-                isChecked={featured}
-                onChange={updateExistingTruckDetails}
-              >
-                Featured
-              </Checkbox>
-            </FormControl> */}
           </ModalBody>
 
           <ModalFooter>

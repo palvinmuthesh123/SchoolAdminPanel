@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BiChevronDown } from 'react-icons/bi';
 import { formatPrice } from '../utils/helpers';
-import { useProductContext } from '../context/product_context';
+import { usePathwayContext } from '../context/pathway_context';
 import { Link } from 'react-router-dom';
+// import coocker from '../assets/logo.svg';
 import {
   Table,
   Thead,
@@ -23,23 +24,19 @@ import {
   Text,
   useToast,
 } from '@chakra-ui/react';
-import UpdateProductModal from './UpdateProductModal';
+import UpdatePathwayModal from './UpdatePathwayModal';
 import QRCode from 'react-qr-code';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-function ProductsTable({ products }) {
+function PathwaysTable({ pathways }) {
   const toast = useToast();
-  const { fetchProducts, deleteProduct } = useProductContext();
+  const { fetchPathways, deletePathway } = usePathwayContext();
   const [loading, setLoading] = useState(false);
   const qrRefs = useRef({});
 
-  useEffect(()=> {
-    console.log(products, "KKKKIIII...............")
-  },[])
-
-  const handleDownloadPDF = async (productId) => {
-    const qrCanvas = qrRefs.current[productId]?.current;
+  const handleDownloadPDF = async (pathwayId) => {
+    const qrCanvas = qrRefs.current[pathwayId]?.current;
   
     if (!qrCanvas || !document.body.contains(qrCanvas)) {
       console.error('QR code element is not attached to the DOM');
@@ -54,7 +51,7 @@ function ProductsTable({ products }) {
   
         const pdf = new jsPDF();
         pdf.addImage(imgData, 'PNG', 10, 10, 180, 180);
-        pdf.save(`${productId}_qr_code.pdf`);
+        pdf.save(`${pathwayId}_qr_code.pdf`);
       } catch (error) {
         console.error('Error generating PDF:', error);
       }
@@ -63,7 +60,7 @@ function ProductsTable({ products }) {
 
   const handleDelete = async (id) => {
     setLoading(true);
-    const response = await deleteProduct(id);
+    const response = await deletePathway(id);
     setLoading(false);
     if (response.success) {
       toast({
@@ -73,7 +70,7 @@ function ProductsTable({ products }) {
         duration: 5000,
         isClosable: true,
       });
-      return await fetchProducts();
+      return await fetchPathways();
     } else {
       return toast({
         position: 'top',
@@ -96,39 +93,40 @@ function ProductsTable({ products }) {
           <Thead>
             <Tr>
               <Th>Image</Th>
-              <Th>Cooker ID</Th>
+              <Th>Pathway Name</Th>
               <Th>Description</Th>
-              <Th>Kitchen ID</Th>
-              <Th>QR</Th>
+              <Th>Schools</Th>
+              <Th>Kitchen</Th>
+              {/* <Th>QR</Th> */}
               <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
-            {products ? products.map((product, index) => {
-              const { image, cookerId, id, description, kitchenId } = product;
-              if (!qrRefs.current[cookerId]) {
-                qrRefs.current[cookerId] = React.createRef();
+            {pathways.map((pathway, index) => {
+              const { image, name, id, description, schools, kitchenId } = pathway;
+              if (!qrRefs.current[name]) {
+                qrRefs.current[name] = React.createRef();
               }
               return (
                 <Tr key={index}>
                   <Td>
-                  {image ? 
+                    {image ? 
                     <Image
                       src={image}
-                      boxSize='100px'
+                      boxSize='90px'
                       objectFit='cover'
                       borderRadius='lg'
                     /> : 
                     <Image
-                      src={require('../assets/cooker.png')}
-                      boxSize='100px'
+                      src={require('../assets/pathways.png')}
+                      boxSize='90px'
                       objectFit='cover'
                       borderRadius='lg'
                     />}
                   </Td>
                   <Td>
                     <VStack alignItems='flex-start' spacing={1}>
-                      <Text as='b'>{cookerId}</Text>
+                      <Text as='b'>{name}</Text>
                     </VStack>
                   </Td>
                   <Td>
@@ -137,44 +135,46 @@ function ProductsTable({ products }) {
                     </VStack>
                   </Td>
                   <Td>
+                    <VStack alignItems="flex-start" spacing={1}>
+                      <Text as="b">{Array.isArray(schools) ? schools.join(", ") : ""}</Text>
+                    </VStack>
+                  </Td>
+                  <Td>
                     <VStack alignItems='flex-start' spacing={1}>
                       <Text as='b'>{kitchenId}</Text>
                     </VStack>
                   </Td>
-                  <Td>
-                    <div ref={qrRefs.current[cookerId]}>
+                  {/* <Td>
+                    <div ref={qrRefs.current[name]}>
                       <QRCode
                         value={JSON.stringify({
-                          cooker_id: cookerId
+                          pathway_name: name
                         })}
                         size={128} // Adjust size as necessary
                       />
                     </div>
-                  </Td>
+                  </Td> */}
                   <Td>
                     <Menu>
                       <MenuButton as={Button} rightIcon={<BiChevronDown />}>
                         Actions
                       </MenuButton>
                       <MenuList>
-                        <Link to={`/products/${id}`}>
+                        <Link to={`/pathways/${id}`}>
                           <MenuItem>View</MenuItem>
                         </Link>
                         <MenuItem>
-                          <UpdateProductModal id={id} />
+                          <UpdatePathwayModal id={id} />
                         </MenuItem>
                         <MenuItem onClick={() => handleDelete(id)}>
                           Delete
-                        </MenuItem>
-                        <MenuItem onClick={() => handleDownloadPDF(cookerId)}>
-                          Download QR
                         </MenuItem>
                       </MenuList>
                     </Menu>
                   </Td>
                 </Tr>
               );
-            }) : null}
+            })}
           </Tbody>
         </Table>
       )}
@@ -182,4 +182,4 @@ function ProductsTable({ products }) {
   );
 }
 
-export default ProductsTable;
+export default PathwaysTable;

@@ -21,24 +21,19 @@ import {
   VStack,
   Checkbox,
   Text,
+  Select
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
 import { useContainerContext } from '../context/container_context';
+import { useKitchenContext } from '../context/kitchen_context';
 
 function UpdateContainerModal({ id }) {
   const {
     single_container: {
       containerId = '',
-      // price = '',
-      // stock = 0,
       description = '',
-      // colors = [],
-      // sizes = [],
-      // category = '',
-      // company = '',
+      kitchenId = [],
       images = [],
-      // shipping = false,
-      // featured = false,
     },
     single_container_loading,
     fetchContainers,
@@ -46,9 +41,19 @@ function UpdateContainerModal({ id }) {
     updateExistingContainerDetails,
     updateContainer,
   } = useContainerContext();
-
+  const { kitchens } = useKitchenContext();
+  const [selectedKitchens, setSelectedKitchens] = useState([]);
   const [imageList, setImageList] = useState(images);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if(kitchenId.length>0 && kitchens.length>0) {
+      const preSelectedSchools = kitchens.filter((item) =>
+        kitchenId == item.kitchenId
+      );
+      setSelectedKitchens(preSelectedSchools);
+    }
+  }, [kitchenId, kitchens]);
 
   const onDrop = useCallback((acceptedFiles) => {
     acceptedFiles.forEach((file) => {
@@ -78,16 +83,9 @@ function UpdateContainerModal({ id }) {
   };
 
   const handleSubmit = async () => {
+    const selectedNames = selectedKitchens.map((kitchen) => kitchen.kitchenId);
     if (
       !containerId 
-      // ||
-      // !price ||
-      // !stock ||
-      // !description ||
-      // colors.length < 1 ||
-      // sizes.length < 1 ||
-      // !category ||
-      // !company
     ) {
       return toast({
         position: 'top',
@@ -97,29 +95,16 @@ function UpdateContainerModal({ id }) {
         isClosable: true,
       });
     }
-    // if (imageList.length < 1) {
-    //   return toast({
-    //     position: 'top',
-    //     description: 'Add atleast one image',
-    //     status: 'error',
-    //     duration: 5000,
-    //     isClosable: true,
-    //   });
-    // }
+    
     setLoading(true);
-    const container = {
+    var container = {
       containerId,
-      // price,
-      // stock,
       description,
-      // colors,
-      // sizes,
-      // category,
-      // company,
-      // shipping,
-      // featured,
       images: imageList,
     };
+    if(selectedNames) {
+      Object.assign(container, {kitchenId: selectedNames[0]})
+    }
     const responseCreate = await updateContainer(id, container);
     setLoading(false);
     if (responseCreate.success) {
@@ -179,30 +164,6 @@ function UpdateContainerModal({ id }) {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Price</FormLabel>
-              <Input
-                type='number'
-                placeholder='Container Price'
-                name='price'
-                focusBorderColor='brown.500'
-                value={price}
-                onChange={updateExistingContainerDetails}
-              />
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Stock</FormLabel>
-              <Input
-                type='number'
-                placeholder='Container Stock'
-                name='stock'
-                focusBorderColor='brown.500'
-                value={stock}
-                onChange={updateExistingContainerDetails}
-              />
-            </FormControl> */}
-
             <FormControl mt={4}>
               <FormLabel>Description</FormLabel>
               <Textarea
@@ -214,52 +175,32 @@ function UpdateContainerModal({ id }) {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Category</FormLabel>
-              <Input
-                placeholder='Container Category'
-                name='category'
-                focusBorderColor='brown.500'
-                value={category}
-                onChange={updateExistingContainerDetails}
-              />
-            </FormControl>
-
             <FormControl mt={4}>
-              <FormLabel>Company</FormLabel>
-              <Input
-                placeholder='Container Company'
-                name='company'
-                focusBorderColor='brown.500'
-                value={company}
-                onChange={updateExistingContainerDetails}
-              />
+              <FormLabel>Kitchens</FormLabel>
+              <Select
+                placeholder="Select Kitchen"
+                value={selectedKitchens[0]?.kitchenId || ''}
+                onChange={(e) => {
+                  const selectedKitchen = kitchens.find(
+                    (kitchen) => kitchen.kitchenId === e.target.value
+                  );
+                  setSelectedKitchens(selectedKitchen ? [selectedKitchen] : []);
+                }}
+                focusBorderColor="brown.500"
+                width="100%"
+                sx={{
+                  option: {
+                    width: "100%",
+                  },
+                }}
+              >
+                {kitchens.map((kitchen) => (
+                  <option key={kitchen.kitchenId} value={kitchen.kitchenId}>
+                    {kitchen.description}
+                  </option>
+                ))}
+              </Select>
             </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Sizes</FormLabel>
-              <Input
-                placeholder='Container Sizes (comma separated)'
-                name='sizes'
-                focusBorderColor='brown.500'
-                value={sizes}
-                onChange={updateExistingContainerDetails}
-              />
-              <FormHelperText>Eg: m, l, xl, xxl, xxxl</FormHelperText>
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Colors</FormLabel>
-              <Input
-                placeholder='Container Colors (comma separated)'
-                name='colors'
-                focusBorderColor='brown.500'
-                value={colors}
-                onChange={updateExistingContainerDetails}
-              />
-              <FormHelperText>Eg: red,green,blue</FormHelperText>
-              <FormHelperText>Eg: #FF000,#00FF00,#0000FF</FormHelperText>
-            </FormControl> */}
 
             <FormControl mt={4}>
               <FormLabel>Images</FormLabel>
@@ -310,28 +251,6 @@ function UpdateContainerModal({ id }) {
                 })}
               </HStack>
             </FormControl>
-
-            {/* <FormControl mt={4}>
-              <Checkbox
-                name='shipping'
-                colorScheme='brown'
-                isChecked={shipping}
-                onChange={updateExistingContainerDetails}
-              >
-                Shipping
-              </Checkbox>
-            </FormControl>
-
-            <FormControl mt={4}>
-              <Checkbox
-                name='featured'
-                colorScheme='brown'
-                isChecked={featured}
-                onChange={updateExistingContainerDetails}
-              >
-                Featured
-              </Checkbox>
-            </FormControl> */}
             
           </ModalBody>
 

@@ -20,28 +20,24 @@ import {
   Image,
   VStack,
   Checkbox,
+  Select
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
 import { useSchoolContext } from '../context/school_context';
+import { useKitchenContext } from '../context/kitchen_context';
 
 function CreateNewSchoolModal() {
   const {
     new_school: {
       name,
-      // price,
-      // stock,
       description,
-      // colors,
-      // sizes,
-      // category,
-      // company,
-      // shipping,
-      // featured,
+      kitchenId
     },
     updateNewSchoolDetails,
     createNewSchool,
   } = useSchoolContext();
-
+  const { kitchens } = useKitchenContext();
+  const [selectedKitchens, setSelectedKitchens] = useState([]);
   const [imageList, setImageList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -74,16 +70,11 @@ function CreateNewSchoolModal() {
   };
 
   const handleSubmit = async () => {
+    const selectedNames = selectedKitchens.map((kitchen) => kitchen.kitchenId);
     if (
       !name ||
-      // !price ||
-      // !stock ||
-      !description 
-      // ||
-      // colors.length < 1 ||
-      // sizes.length < 1 ||
-      // !category ||
-      // !company
+      !description ||
+      !selectedNames
     ) {
       return toast({
         position: 'top',
@@ -93,28 +84,12 @@ function CreateNewSchoolModal() {
         isClosable: true,
       });
     }
-    // if (imageList.length < 1) {
-    //   return toast({
-    //     position: 'top',
-    //     description: 'Add atleast one image',
-    //     status: 'error',
-    //     duration: 5000,
-    //     isClosable: true,
-    //   });
-    // }
     setLoading(true);
     console.log('uploading');
     const school = {
       name,
-      // price,
-      // stock,
       description,
-      // colors,
-      // sizes,
-      // category,
-      // company,
-      // shipping,
-      // featured,
+      kitchenId: selectedNames[0],
       images: imageList,
     };
     const responseCreate = await createNewSchool(school);
@@ -163,30 +138,6 @@ function CreateNewSchoolModal() {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Price</FormLabel>
-              <Input
-                type='number'
-                placeholder='School Price'
-                name='price'
-                focusBorderColor='brown.500'
-                value={price}
-                onChange={updateNewSchoolDetails}
-              />
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Stock</FormLabel>
-              <Input
-                type='number'
-                placeholder='School Stock'
-                name='stock'
-                focusBorderColor='brown.500'
-                value={stock}
-                onChange={updateNewSchoolDetails}
-              />
-            </FormControl> */}
-
             <FormControl mt={4}>
               <FormLabel>Mobile</FormLabel>
               <Input
@@ -201,52 +152,32 @@ function CreateNewSchoolModal() {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Category</FormLabel>
-              <Input
-                placeholder='School Category'
-                name='category'
-                focusBorderColor='brown.500'
-                value={category}
-                onChange={updateNewSchoolDetails}
-              />
-            </FormControl>
-
             <FormControl mt={4}>
-              <FormLabel>Company</FormLabel>
-              <Input
-                placeholder='School Company'
-                name='company'
-                focusBorderColor='brown.500'
-                value={company}
-                onChange={updateNewSchoolDetails}
-              />
+              <FormLabel>Kitchens</FormLabel>
+              <Select
+                placeholder="Select Kitchen"
+                value={selectedKitchens[0]?.kitchenId || ''}
+                onChange={(e) => {
+                  const selectedKitchen = kitchens.find(
+                    (kitchen) => kitchen.kitchenId === e.target.value
+                  );
+                  setSelectedKitchens(selectedKitchen ? [selectedKitchen] : []);
+                }}
+                focusBorderColor="brown.500"
+                width="100%"
+                sx={{
+                  option: {
+                    width: "100%",
+                  },
+                }}
+              >
+                {kitchens.map((kitchen) => (
+                  <option key={kitchen.kitchenId} value={kitchen.kitchenId}>
+                    {kitchen.description}
+                  </option>
+                ))}
+              </Select>
             </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Sizes</FormLabel>
-              <Input
-                placeholder='School Sizes (comma separated)'
-                name='sizes'
-                focusBorderColor='brown.500'
-                value={sizes}
-                onChange={updateNewSchoolDetails}
-              />
-              <FormHelperText>Eg: m, l, xl, xxl, xxxl</FormHelperText>
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Colors</FormLabel>
-              <Input
-                placeholder='School Colors (comma separated)'
-                name='colors'
-                focusBorderColor='brown.500'
-                value={colors}
-                onChange={updateNewSchoolDetails}
-              />
-              <FormHelperText>Eg: red,green,blue</FormHelperText>
-              <FormHelperText>Eg: #FF000,#00FF00,#0000FF</FormHelperText>
-            </FormControl> */}
 
             <FormControl mt={4}>
               <FormLabel>Images</FormLabel>

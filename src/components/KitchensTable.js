@@ -94,7 +94,7 @@ function KitchensTable({ kitchens }) {
               <Th>Image</Th>
               <Th>Kitchen ID</Th>
               <Th>Description</Th>
-              <Th>QR</Th>
+              {/* <Th>QR</Th> */}
               <Th></Th>
             </Tr>
           </Thead>
@@ -131,7 +131,7 @@ function KitchensTable({ kitchens }) {
                       <Text as='b'>{description}</Text>
                     </VStack>
                   </Td>
-                  <Td>
+                  {/* <Td>
                     <div ref={qrRefs.current[kitchenId]}>
                       <QRCode
                         value={JSON.stringify({
@@ -140,7 +140,7 @@ function KitchensTable({ kitchens }) {
                         size={128} // Adjust size as necessary
                       />
                     </div>
-                  </Td>
+                  </Td> */}
                   <Td>
                     <Menu>
                       <MenuButton as={Button} rightIcon={<BiChevronDown />}>

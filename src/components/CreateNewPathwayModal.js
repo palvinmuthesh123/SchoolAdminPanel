@@ -4,10 +4,10 @@ import {
   Input,
   FormControl,
   FormLabel,
-  FormHelperText,
   Modal,
   ModalOverlay,
   ModalContent,
+  Select,
   ModalHeader,
   ModalFooter,
   ModalBody,
@@ -20,40 +20,35 @@ import {
   Image,
   VStack,
   Checkbox,
-  Text,
-  Select
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
-import { useProductContext } from '../context/product_context';
+import { usePathwayContext } from '../context/pathway_context';
+import { useSchoolContext } from '../context/school_context';
+import Multiselect from 'multiselect-react-dropdown';
 import { useKitchenContext } from '../context/kitchen_context';
+import axios from 'axios';
+import { schools_urls } from '../utils/constants';
 
-function UpdateProductModal({ id }) {
+function CreateNewPathwayModal() {
+  // const { schools: school } = useSchoolContext();
+  const [school, setSchool] = useState([]);
   const {
-    single_product: {
-      cookerId = '',
-      description = '',
-      kitchenId = [],
-      images = [],
+    new_pathway: {
+      name,
+      description,
+      images,
+      schools,
+      kitchenId
     },
-    single_product_loading,
-    fetchProducts,
-    fetchSingleProduct,
-    updateExistingProductDetails,
-    updateProduct,
-  } = useProductContext();
-  const { kitchens } = useKitchenContext();
-  const [selectedKitchens, setSelectedKitchens] = useState([]);
-  const [imageList, setImageList] = useState(images);
+    updateNewPathwayDetails,
+    createNewPathway,
+  } = usePathwayContext();
+  const [imageList, setImageList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if(kitchenId.length>0 && kitchens.length>0) {
-      const preSelectedSchools = kitchens.filter((item) =>
-        kitchenId == item.kitchenId
-      );
-      setSelectedKitchens(preSelectedSchools);
-    }
-  }, [kitchenId, kitchens]);
+  useEffect(()=> {
+    console.log(school, "SSSSSSSSSSSSSS")
+  },[])
 
   const onDrop = useCallback((acceptedFiles) => {
     acceptedFiles.forEach((file) => {
@@ -74,19 +69,56 @@ function UpdateProductModal({ id }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const initialRef = useRef();
   const toast = useToast();
+  const [selectedSchools, setSelectedSchools] = useState([]);
+  const { kitchens } = useKitchenContext();
+  const [selectedKitchens, setSelectedKitchens] = useState([]);
+
+  // Handle selection
+  const onSelect = (selectedList) => {
+    if(selectedKitchens && selectedKitchens.length!=0) {
+      setSelectedSchools(selectedList);
+    }
+    else {
+      return toast({
+        position: 'top',
+        description: 'Please Select Kitchen',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const fetchSchools = async (id) => {
+    try {
+      const response = await axios.get(schools_urls+'?kitchenId='+id);
+      const { data } = response.data;
+      setSchool(data);
+    } catch (error) {
+      console.log(error, "EEEEEEEEEEEEE");
+    }
+  };
+
+  const onRemove = (selectedList) => {
+    setSelectedSchools(selectedList);
+  };
 
   const removeImage = (index) => {
     setImageList((prev) => {
       prev.splice(index, 1);
+      console.log(prev);
       return [...prev];
     });
   };
 
   const handleSubmit = async () => {
-    const selectedNames = selectedKitchens.map((kitchen) => kitchen.kitchenId);
+    const selectedNames = selectedSchools.map((school) => school.name);
+    const selectedNames1 = selectedKitchens.map((kitchen) => kitchen.kitchenId);
     if (
-      !cookerId ||
-      !description
+      !name ||
+      !description ||
+      !selectedNames1 ||
+      !selectedNames
     ) {
       return toast({
         position: 'top',
@@ -96,29 +128,26 @@ function UpdateProductModal({ id }) {
         isClosable: true,
       });
     }
-    
     setLoading(true);
-    var product = {
-      cookerId,
+    console.log('uploading');
+    const pathway = {
+      name,
       description,
+      schools: selectedNames[0],
       images: imageList,
-      
+      kitchenId: selectedNames1[0],
     };
-    if(selectedNames) {
-      Object.assign(product, {kitchenId: selectedNames[0]})
-    }
-    const responseCreate = await updateProduct(id, product);
+    const responseCreate = await createNewPathway(pathway);
     setLoading(false);
     if (responseCreate.success) {
       onClose();
-      toast({
+      return toast({
         position: 'top',
-        description: 'Product updated',
+        description: 'Route created',
         status: 'success',
         duration: 5000,
         isClosable: true,
       });
-      await fetchProducts();
     } else {
       return toast({
         position: 'top',
@@ -130,74 +159,38 @@ function UpdateProductModal({ id }) {
     }
   };
 
-  useEffect(() => {
-    setImageList(images);
-    // eslint-disable-next-line
-  }, [single_product_loading]);
-
   return (
     <>
-      <Text
-        colorScheme='brown'
-        minW='100%'
-        onClick={() => {
-          fetchSingleProduct(id);
-          onOpen();
-        }}
-      >
-        Edit
-      </Text>
+      <Button colorScheme='brown' onClick={onOpen}>
+      Create New Route
+      </Button>
 
       <Modal initialFocusRef={initialRef} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Create new product</ModalHeader>
+          <ModalHeader>Create new route</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
-              <FormLabel>Cooker ID</FormLabel>
+              <FormLabel>Name</FormLabel>
               <Input
                 ref={initialRef}
-                placeholder='Product Cooker ID'
-                name='cookerId'
+                placeholder='Route Name'
+                name='name'
                 focusBorderColor='brown.500'
-                value={cookerId}
-                onChange={updateExistingProductDetails}
+                value={name}
+                onChange={updateNewPathwayDetails}
               />
             </FormControl>
-
-            {/* <FormControl mt={4}>
-              <FormLabel>Price</FormLabel>
-              <Input
-                type='number'
-                placeholder='Product Price'
-                name='price'
-                focusBorderColor='brown.500'
-                value={price}
-                onChange={updateExistingProductDetails}
-              />
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Stock</FormLabel>
-              <Input
-                type='number'
-                placeholder='Product Stock'
-                name='stock'
-                focusBorderColor='brown.500'
-                value={stock}
-                onChange={updateExistingProductDetails}
-              />
-            </FormControl> */}
 
             <FormControl mt={4}>
               <FormLabel>Description</FormLabel>
               <Textarea
-                placeholder='Product Description'
+                placeholder='Route Description'
                 name='description'
                 focusBorderColor='brown.500'
                 value={description}
-                onChange={updateExistingProductDetails}
+                onChange={updateNewPathwayDetails}
               />
             </FormControl>
 
@@ -210,7 +203,9 @@ function UpdateProductModal({ id }) {
                   const selectedKitchen = kitchens.find(
                     (kitchen) => kitchen.kitchenId === e.target.value
                   );
+                  fetchSchools(selectedKitchen.kitchenId)
                   setSelectedKitchens(selectedKitchen ? [selectedKitchen] : []);
+                  setSelectedSchools([]);
                 }}
                 focusBorderColor="brown.500"
                 width="100%"
@@ -226,6 +221,21 @@ function UpdateProductModal({ id }) {
                   </option>
                 ))}
               </Select>
+            </FormControl>
+
+            <FormControl mt={4}>
+              <FormLabel>Schools</FormLabel>
+              <Multiselect
+                options={school}
+                selectedValues={selectedSchools}
+                onSelect={onSelect}
+                onRemove={onRemove}
+                displayValue="name"
+                placeholder="Select Schools"
+                style={{
+                  searchBox: { background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '4px' },
+                }}
+              />
             </FormControl>
 
             <FormControl mt={4}>
@@ -259,7 +269,7 @@ function UpdateProductModal({ id }) {
                   return (
                     <VStack key={index} spacing={3}>
                       <Image
-                        src={image?.url ? image.url : image}
+                        src={image}
                         boxSize='70px'
                         objectFit='cover'
                         borderRadius='lg'
@@ -278,7 +288,6 @@ function UpdateProductModal({ id }) {
               </HStack>
             </FormControl>
 
-           
           </ModalBody>
 
           <ModalFooter>
@@ -287,7 +296,7 @@ function UpdateProductModal({ id }) {
             </Button>
             <Button
               isLoading={loading}
-              loadingText='Updating Product'
+              loadingText='Creating Pathway'
               colorScheme='brown'
               onClick={handleSubmit}
             >
@@ -300,4 +309,4 @@ function UpdateProductModal({ id }) {
   );
 }
 
-export default UpdateProductModal;
+export default CreateNewPathwayModal;

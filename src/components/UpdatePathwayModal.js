@@ -24,36 +24,84 @@ import {
   Select
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
-import { useProductContext } from '../context/product_context';
+import { usePathwayContext } from '../context/pathway_context';
+import { useSchoolContext } from '../context/school_context'
+import Multiselect from 'multiselect-react-dropdown';
 import { useKitchenContext } from '../context/kitchen_context';
-
-function UpdateProductModal({ id }) {
-  const {
-    single_product: {
-      cookerId = '',
-      description = '',
-      kitchenId = [],
-      images = [],
-    },
-    single_product_loading,
-    fetchProducts,
-    fetchSingleProduct,
-    updateExistingProductDetails,
-    updateProduct,
-  } = useProductContext();
+import axios from 'axios';
+import { schools_urls } from '../utils/constants';
+function UpdatePathwayModal({ id }) {
+  const { schools: school } = useSchoolContext();
+  const [school1, setSchool1] = useState([]);
   const { kitchens } = useKitchenContext();
   const [selectedKitchens, setSelectedKitchens] = useState([]);
+  const {
+    single_pathway: {
+      name = '',
+      description = '',
+      images = [],
+      schools = [],
+      kitchenId = []
+    },
+    single_pathway_loading,
+    fetchPathways,
+    fetchSinglePathway,
+    updateExistingPathwayDetails,
+    updatePathway,
+  } = usePathwayContext();
+
   const [imageList, setImageList] = useState(images);
   const [loading, setLoading] = useState(false);
+  const [selectedSchools, setSelectedSchools] = useState([]);
+  const [changed, setChanged] = useState(false);
 
   useEffect(() => {
-    if(kitchenId.length>0 && kitchens.length>0) {
+    if(kitchenId.length>0 && kitchens.length>0 && !changed) {
       const preSelectedSchools = kitchens.filter((item) =>
         kitchenId == item.kitchenId
       );
       setSelectedKitchens(preSelectedSchools);
     }
   }, [kitchenId, kitchens]);
+
+  useEffect(() => {
+    if(school.length>0 && schools.length>0 && !changed) {
+      const preSelectedSchools = school.filter((item) =>
+        schools.some((selected) => selected?.toLowerCase() === item?.name?.toLowerCase())
+      );
+      setSelectedSchools(preSelectedSchools);
+    }
+  }, [school, schools]);
+
+  // Handle selection
+  const onSelect = (selectedList) => {
+    if(selectedKitchens && selectedKitchens.length!=0) {
+      setSelectedSchools(selectedList);
+    }
+    else {
+      return toast({
+        position: 'top',
+        description: 'Please Select Kitchen',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const onRemove = (selectedList) => {
+    setSelectedSchools(selectedList);
+  };
+
+  const fetchSchools = async (id) => {
+    try {
+      const response = await axios.get(schools_urls+'?kitchenId='+id);
+      const { data } = response.data;
+      setSchool1(data);
+    } catch (error) {
+      console.log(error, "EEEEEEEEEEEEE");
+    }
+  };
 
   const onDrop = useCallback((acceptedFiles) => {
     acceptedFiles.forEach((file) => {
@@ -83,10 +131,10 @@ function UpdateProductModal({ id }) {
   };
 
   const handleSubmit = async () => {
-    const selectedNames = selectedKitchens.map((kitchen) => kitchen.kitchenId);
+    const selectedNames = selectedSchools.map((school) => school.name);
+    const selectedNames1 = selectedKitchens.map((kitchen) => kitchen.kitchenId);
     if (
-      !cookerId ||
-      !description
+      !name 
     ) {
       return toast({
         position: 'top',
@@ -96,29 +144,30 @@ function UpdateProductModal({ id }) {
         isClosable: true,
       });
     }
-    
     setLoading(true);
-    var product = {
-      cookerId,
+    var pathway = {
+      name,
       description,
       images: imageList,
-      
     };
-    if(selectedNames) {
-      Object.assign(product, {kitchenId: selectedNames[0]})
+    if(selectedNames.length>0) {
+      Object.assign(pathway, {schools: selectedNames})
     }
-    const responseCreate = await updateProduct(id, product);
+    if(selectedNames1) {
+      Object.assign(pathway, {kitchenId: selectedNames1[0]})
+    }
+    const responseCreate = await updatePathway(id, pathway);
     setLoading(false);
     if (responseCreate.success) {
       onClose();
       toast({
         position: 'top',
-        description: 'Product updated',
+        description: 'Pathway updated',
         status: 'success',
         duration: 5000,
         isClosable: true,
       });
-      await fetchProducts();
+      await fetchPathways();
     } else {
       return toast({
         position: 'top',
@@ -133,7 +182,7 @@ function UpdateProductModal({ id }) {
   useEffect(() => {
     setImageList(images);
     // eslint-disable-next-line
-  }, [single_product_loading]);
+  }, [single_pathway_loading]);
 
   return (
     <>
@@ -141,7 +190,7 @@ function UpdateProductModal({ id }) {
         colorScheme='brown'
         minW='100%'
         onClick={() => {
-          fetchSingleProduct(id);
+          fetchSinglePathway(id);
           onOpen();
         }}
       >
@@ -151,53 +200,29 @@ function UpdateProductModal({ id }) {
       <Modal initialFocusRef={initialRef} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Create new product</ModalHeader>
+          <ModalHeader>Create new route</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
-              <FormLabel>Cooker ID</FormLabel>
+              <FormLabel>Route Name</FormLabel>
               <Input
                 ref={initialRef}
-                placeholder='Product Cooker ID'
-                name='cookerId'
+                placeholder='Route Name'
+                name='name'
                 focusBorderColor='brown.500'
-                value={cookerId}
-                onChange={updateExistingProductDetails}
+                value={name}
+                onChange={updateExistingPathwayDetails}
               />
             </FormControl>
-
-            {/* <FormControl mt={4}>
-              <FormLabel>Price</FormLabel>
-              <Input
-                type='number'
-                placeholder='Product Price'
-                name='price'
-                focusBorderColor='brown.500'
-                value={price}
-                onChange={updateExistingProductDetails}
-              />
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Stock</FormLabel>
-              <Input
-                type='number'
-                placeholder='Product Stock'
-                name='stock'
-                focusBorderColor='brown.500'
-                value={stock}
-                onChange={updateExistingProductDetails}
-              />
-            </FormControl> */}
 
             <FormControl mt={4}>
               <FormLabel>Description</FormLabel>
               <Textarea
-                placeholder='Product Description'
+                placeholder='Pathway Description'
                 name='description'
                 focusBorderColor='brown.500'
                 value={description}
-                onChange={updateExistingProductDetails}
+                onChange={updateExistingPathwayDetails}
               />
             </FormControl>
 
@@ -207,10 +232,13 @@ function UpdateProductModal({ id }) {
                 placeholder="Select Kitchen"
                 value={selectedKitchens[0]?.kitchenId || ''}
                 onChange={(e) => {
+                  setChanged(true);
                   const selectedKitchen = kitchens.find(
                     (kitchen) => kitchen.kitchenId === e.target.value
                   );
+                  fetchSchools(selectedKitchen.kitchenId)
                   setSelectedKitchens(selectedKitchen ? [selectedKitchen] : []);
+                  setSelectedSchools([]);
                 }}
                 focusBorderColor="brown.500"
                 width="100%"
@@ -226,6 +254,21 @@ function UpdateProductModal({ id }) {
                   </option>
                 ))}
               </Select>
+            </FormControl>
+
+            <FormControl mt={4}>
+              <FormLabel>Schools</FormLabel>
+              <Multiselect
+                options={changed ? school1 : school}
+                selectedValues={selectedSchools}
+                onSelect={onSelect}
+                onRemove={onRemove}
+                displayValue="name"
+                placeholder="Select Schools"
+                style={{
+                  searchBox: { background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '4px' },
+                }}
+              />
             </FormControl>
 
             <FormControl mt={4}>
@@ -278,7 +321,28 @@ function UpdateProductModal({ id }) {
               </HStack>
             </FormControl>
 
-           
+            {/* <FormControl mt={4}>
+              <Checkbox
+                name='shipping'
+                colorScheme='brown'
+                isChecked={shipping}
+                onChange={updateExistingPathwayDetails}
+              >
+                Shipping
+              </Checkbox>
+            </FormControl>
+
+            <FormControl mt={4}>
+              <Checkbox
+                name='featured'
+                colorScheme='brown'
+                isChecked={featured}
+                onChange={updateExistingPathwayDetails}
+              >
+                Featured
+              </Checkbox>
+            </FormControl> */}
+            
           </ModalBody>
 
           <ModalFooter>
@@ -287,7 +351,7 @@ function UpdateProductModal({ id }) {
             </Button>
             <Button
               isLoading={loading}
-              loadingText='Updating Product'
+              loadingText='Updating Pathway'
               colorScheme='brown'
               onClick={handleSubmit}
             >
@@ -300,4 +364,4 @@ function UpdateProductModal({ id }) {
   );
 }
 
-export default UpdateProductModal;
+export default UpdatePathwayModal;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BiChevronDown } from 'react-icons/bi';
 import { formatPrice } from '../utils/helpers';
 import { useContainerContext } from '../context/container_context';
+import { useKitchenContext } from '../context/kitchen_context';
 import { Link } from 'react-router-dom';
 // import coocker from '../assets/logo.svg';
 import {
@@ -28,12 +29,14 @@ import UpdateContainerModal from './UpdateContainerModal';
 import QRCode from 'react-qr-code';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import Multiselect from 'multiselect-react-dropdown';
 
 function ContainersTable({ containers }) {
   const toast = useToast();
   const { fetchContainers, deleteContainer } = useContainerContext();
   const [loading, setLoading] = useState(false);
   const qrRefs = useRef({});
+  const { kitchens } = useKitchenContext();
 
   const handleDownloadPDF = async (containerId) => {
     const qrCanvas = qrRefs.current[containerId]?.current;
@@ -95,13 +98,14 @@ function ContainersTable({ containers }) {
               <Th>Image</Th>
               <Th>Container ID</Th>
               <Th>Description</Th>
+              <Th>Kitchen</Th>
               <Th>QR</Th>
               <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
             {containers.map((container, index) => {
-              const { image, containerId, id, description } = container;
+              const { image, containerId, id, description, kitchenId } = container;
               if (!qrRefs.current[containerId]) {
                 qrRefs.current[containerId] = React.createRef();
               }
@@ -130,6 +134,11 @@ function ContainersTable({ containers }) {
                   <Td>
                     <VStack alignItems='flex-start' spacing={1}>
                       <Text as='b'>{description}</Text>
+                    </VStack>
+                  </Td>
+                  <Td>
+                    <VStack alignItems="flex-start" spacing={1}>
+                    <Text as='b'>{kitchenId}</Text>
                     </VStack>
                   </Td>
                   <Td>

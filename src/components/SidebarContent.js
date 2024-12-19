@@ -46,7 +46,7 @@ export default function SidebarContent({ onClose, ...rest }) {
       {...rest}
     >
       <Flex h='20' alignItems='center' mx='8' justifyContent='space-between' style={{justifySelf: 'center', marginTop: '20px', marginBottom: '20px'}}>
-        <Image src={require('../assets/food.png')} style={{height: 70, width: 70}}/>
+        <Image src={require('../assets/logo.png')} style={{height: 70, width: 70, borderRadius: 20}}/>
         <CloseButton style={{ position: 'absolute', right: '30px', top: '20px'}} display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
       {Links.map((link) => (

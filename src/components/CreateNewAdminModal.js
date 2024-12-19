@@ -21,7 +21,18 @@ import { useAdminContext } from '../context/admin_context';
 
 function CreateNewAdminModal() {
   const {
-    new_admin: { name, email, password, privilege, cooker, container, truck, school, kitchen, mobile },
+    new_admin: { 
+      name, 
+      email, 
+      password, 
+      privilege, 
+      cooker, 
+      container, 
+      truck, 
+      school, 
+      kitchen, 
+      mobile 
+    },
     updateNewAdminDetails,
     createNewAdmin,
     fetchAdmins,

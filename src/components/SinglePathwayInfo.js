@@ -13,27 +13,28 @@ import {
 } from '@chakra-ui/react';
 import { formatPrice } from '../utils/helpers';
 import { useAdminContext } from '../context/admin_context';
-import { useContainerContext } from '../context/container_context';
+import { usePathwayContext } from '../context/pathway_context';
 import { Stars } from '.';
 import { useOrderContext } from '../context/order_context';
 
-function SingleContainerInfo({ container }) {
+function SinglePathwayInfo({ pathway }) {
   const { admins } = useAdminContext();
   const { orders } = useOrderContext();
-  const { single_container_loading: loading } = useContainerContext();
+  const { single_pathway_loading: loading } = usePathwayContext();
   const [createdBy, setCreatedBy] = useState('');
   const [unitSold, setUnitSold] = useState(0);
   const {
     _id: id = '',
-    containerId = '',
+    name = '',
     description = '',
-    kitchenId,
+    schools = '',
+    kitchenId = '',
     admin = '',
     createdAt,
-  } = container;
+  } = pathway;
 
   useEffect(() => {
-    console.log(container, "{PPPPPPPPPPPPPPPPP}")
+    console.log(pathway, "{PPPPPPPPPPPPPPPPP}")
     // finding the admin from ID
     const createdBy = admins.find((x) => x.id === admin);
     if (createdBy) {
@@ -42,9 +43,9 @@ function SingleContainerInfo({ container }) {
       setCreatedBy('No Details');
     }
 
-    // creating new array having this container as the only orderItem
-    // const containerOrders = orders.reduce((arr, order) => {
-    //   const item = order.orderItems.find((x) => x.container === id);
+    // creating new array having this pathway as the only orderItem
+    // const pathwayOrders = orders.reduce((arr, order) => {
+    //   const item = order.orderItems.find((x) => x.pathway === id);
     //   if (item) {
     //     arr.push(item);
     //   }
@@ -52,7 +53,7 @@ function SingleContainerInfo({ container }) {
     // }, []);
 
     // // calculating total units sold
-    // const total = containerOrders.reduce((total, order) => {
+    // const total = pathwayOrders.reduce((total, order) => {
     //   const { quantity } = order;
     //   total += quantity;
     //   return total;
@@ -73,8 +74,8 @@ function SingleContainerInfo({ container }) {
         </Thead>
         <Tbody>
           <Tr>
-            <Td>Container ID</Td>
-            <Td>{containerId}</Td>
+            <Td>Route Name</Td>
+            <Td>{name}</Td>
           </Tr>
           {/* <Tr>
             <Td>Price</Td>
@@ -84,6 +85,11 @@ function SingleContainerInfo({ container }) {
             <Td>Description</Td>
             <Td>{description}</Td>
           </Tr>
+          <Tr>
+            <Td>Schools</Td>
+            <Td>{Array.isArray(schools) ? schools.join(", ") : "NA"}</Td>
+          </Tr>
+
           <Tr>
             <Td>Kitchen ID</Td>
             <Td>{kitchenId}</Td>
@@ -105,4 +111,4 @@ function SingleContainerInfo({ container }) {
   );
 }
 
-export default SingleContainerInfo;
+export default SinglePathwayInfo;

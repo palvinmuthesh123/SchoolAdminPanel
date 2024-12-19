@@ -20,30 +20,34 @@ import {
   Image,
   VStack,
   Checkbox,
+  Select
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
 import { useTruckContext } from '../context/truck_context';
+import { useKitchenContext } from '../context/kitchen_context';
+import { usePathwayContext } from '../context/pathway_context';
 
 function CreateNewTruckModal() {
   const {
     new_truck: {
       truckId,
-      price,
-      // stock,
+      driver_name,
+      driver_number,
+      driver_email,
+      driver_password,
+      route,
       description,
-      // colors,
-      // sizes,
-      // category,
-      // company,
-      // shipping,
-      // featured,
     },
     updateNewTruckDetails,
     createNewTruck,
   } = useTruckContext();
-
+  const { pathways } = usePathwayContext();
   const [imageList, setImageList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { kitchens } = useKitchenContext();
+
+  const [selectedKitchens, setSelectedKitchens] = useState([]);
+  const [selectedRoutes, setSelectedRoutes] = useState([]);
 
   const onDrop = useCallback((acceptedFiles) => {
     acceptedFiles.forEach((file) => {
@@ -74,16 +78,16 @@ function CreateNewTruckModal() {
   };
 
   const handleSubmit = async () => {
+    const selectedNames = selectedKitchens.map((kitchen) => kitchen.kitchenId);
+    const selectedNames1 = selectedRoutes.map((route) => route.name);
     if (
       !truckId ||
-      // !price ||
-      // !stock ||
-      !description 
-      // ||
-      // colors.length < 1 ||
-      // sizes.length < 1 ||
-      // !category ||
-      // !company
+      !driver_name ||
+      !driver_number ||
+      !selectedNames1 ||
+      !selectedNames ||
+      !driver_email ||
+      !driver_password
     ) {
       return toast({
         position: 'top',
@@ -93,28 +97,18 @@ function CreateNewTruckModal() {
         isClosable: true,
       });
     }
-    // if (imageList.length < 1) {
-    //   return toast({
-    //     position: 'top',
-    //     description: 'Add atleast one image',
-    //     status: 'error',
-    //     duration: 5000,
-    //     isClosable: true,
-    //   });
-    // }
+   
     setLoading(true);
     console.log('uploading');
     const truck = {
       truckId,
-      // price,
-      // stock,
       description,
-      // colors,
-      // sizes,
-      // category,
-      // company,
-      // shipping,
-      // featured,
+      driver_name,
+      driver_number,
+      driver_email,
+      driver_password,
+      route: selectedNames1[0],
+      kitchenId: selectedNames[0],
       images: imageList,
     };
     const responseCreate = await createNewTruck(truck);
@@ -152,10 +146,10 @@ function CreateNewTruckModal() {
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Truck ID</FormLabel>
               <Input
                 ref={initialRef}
-                placeholder='Truck Name'
+                placeholder='Truck ID'
                 name='truckId'
                 focusBorderColor='brown.500'
                 value={truckId}
@@ -163,34 +157,10 @@ function CreateNewTruckModal() {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Price</FormLabel>
-              <Input
-                type='number'
-                placeholder='Truck Price'
-                name='price'
-                focusBorderColor='brown.500'
-                value={price}
-                onChange={updateNewTruckDetails}
-              />
-            </FormControl>
-
             <FormControl mt={4}>
-              <FormLabel>Stock</FormLabel>
+              <FormLabel>Truck Number</FormLabel>
               <Input
-                type='number'
-                placeholder='Truck Stock'
-                name='stock'
-                focusBorderColor='brown.500'
-                value={stock}
-                onChange={updateNewTruckDetails}
-              />
-            </FormControl> */}
-
-            <FormControl mt={4}>
-              <FormLabel>Description</FormLabel>
-              <Textarea
-                placeholder='Truck Description'
+                placeholder='Truck Number'
                 name='description'
                 focusBorderColor='brown.500'
                 value={description}
@@ -198,52 +168,103 @@ function CreateNewTruckModal() {
               />
             </FormControl>
 
-            {/* <FormControl mt={4}>
-              <FormLabel>Category</FormLabel>
+            <FormControl mt={4}>
+              <FormLabel>Driver Name</FormLabel>
               <Input
-                placeholder='Truck Category'
-                name='category'
+                placeholder='Truck Driver Name'
+                name='driver_name'
                 focusBorderColor='brown.500'
-                value={category}
+                value={driver_name}
                 onChange={updateNewTruckDetails}
               />
             </FormControl>
 
             <FormControl mt={4}>
-              <FormLabel>Company</FormLabel>
+              <FormLabel>Driver Number</FormLabel>
               <Input
-                placeholder='Truck Company'
-                name='company'
+                placeholder='Truck Driver Number'
+                name='driver_number'
                 focusBorderColor='brown.500'
-                value={company}
+                value={driver_number}
                 onChange={updateNewTruckDetails}
               />
             </FormControl>
 
             <FormControl mt={4}>
-              <FormLabel>Sizes</FormLabel>
+              <FormLabel>Driver Email</FormLabel>
               <Input
-                placeholder='Truck Sizes (comma separated)'
-                name='sizes'
+                placeholder='Truck Driver Email'
+                name='driver_email'
                 focusBorderColor='brown.500'
-                value={sizes}
+                value={driver_email}
                 onChange={updateNewTruckDetails}
               />
-              <FormHelperText>Eg: m, l, xl, xxl, xxxl</FormHelperText>
             </FormControl>
 
             <FormControl mt={4}>
-              <FormLabel>Colors</FormLabel>
+              <FormLabel>Driver Password</FormLabel>
               <Input
-                placeholder='Truck Colors (comma separated)'
-                name='colors'
+                placeholder='Truck Driver Password'
+                name='driver_password'
                 focusBorderColor='brown.500'
-                value={colors}
+                value={driver_password}
                 onChange={updateNewTruckDetails}
               />
-              <FormHelperText>Eg: red,green,blue</FormHelperText>
-              <FormHelperText>Eg: #FF000,#00FF00,#0000FF</FormHelperText>
-            </FormControl> */}
+            </FormControl>
+
+            <FormControl mt={4}>
+              <FormLabel>Route</FormLabel>
+              <Select
+                placeholder="Select Route"
+                value={selectedRoutes[0]?.name || ''}
+                onChange={(e) => {
+                  const selectedRoute = pathways.find(
+                    (kitchen) => kitchen.name === e.target.value
+                  );
+                  setSelectedRoutes(selectedRoute ? [selectedRoute] : []);
+                }}
+                focusBorderColor="brown.500"
+                width="100%"
+                sx={{
+                  option: {
+                    width: "100%",
+                  },
+                }}
+              >
+                {pathways.map((path) => (
+                  <option key={path.name} value={path.name}>
+                    {path.name}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl mt={4}>
+              <FormLabel>Kitchens</FormLabel>
+              <Select
+                placeholder="Select Kitchen"
+                value={selectedKitchens[0]?.kitchenId || ''}
+                onChange={(e) => {
+                  const selectedKitchen = kitchens.find(
+                    (kitchen) => kitchen.kitchenId === e.target.value
+                  );
+                  setSelectedKitchens(selectedKitchen ? [selectedKitchen] : []);
+                }}
+                focusBorderColor="brown.500"
+                width="100%"
+                sx={{
+                  option: {
+                    width: "100%",
+                  },
+                }}
+              >
+                {kitchens.map((kitchen) => (
+                  <option key={kitchen.kitchenId} value={kitchen.kitchenId}>
+                    {kitchen.description}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
 
             <FormControl mt={4}>
               <FormLabel>Images</FormLabel>

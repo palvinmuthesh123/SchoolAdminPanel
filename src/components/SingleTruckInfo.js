@@ -27,16 +27,7 @@ function SingleTruckInfo({ truck }) {
     _id: id = '',
     truckId = '',
     description = '',
-    // price = 0,
-    // rating = 0,
-    // colors = [],
-    // sizes = [],
-    // company = '',
-    // category = '',
-    // stock = 0,
-    // numberOfReviews = 0,
-    // shipping = true,
-    // featured = false,
+    kitchenId = '',
     admin = '',
     createdAt,
   } = truck;
@@ -85,10 +76,10 @@ function SingleTruckInfo({ truck }) {
             <Td>Truck ID</Td>
             <Td>{truckId}</Td>
           </Tr>
-          {/* <Tr>
-            <Td>Price</Td>
-            <Td>{formatPrice(price)}</Td>
-          </Tr> */}
+          <Tr>
+            <Td>Kitchen ID</Td>
+            <Td>{kitchenId}</Td>
+          </Tr>
           <Tr>
             <Td>Description</Td>
             <Td>{description}</Td>

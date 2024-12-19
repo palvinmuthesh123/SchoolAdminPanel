@@ -27,16 +27,7 @@ function SingleSchoolInfo({ school }) {
     _id: id = '',
     schoolId = '',
     description = '',
-    // price = 0,
-    // rating = 0,
-    // colors = [],
-    // sizes = [],
-    // company = '',
-    // category = '',
-    // stock = 0,
-    // numberOfReviews = 0,
-    // shipping = true,
-    // featured = false,
+    kitchenId = '',
     admin = '',
     createdAt,
   } = school;
@@ -85,10 +76,10 @@ function SingleSchoolInfo({ school }) {
             <Td>School ID</Td>
             <Td>{schoolId}</Td>
           </Tr>
-          {/* <Tr>
-            <Td>Price</Td>
-            <Td>{formatPrice(price)}</Td>
-          </Tr> */}
+          <Tr>
+            <Td>Kitchen</Td>
+            <Td>{kitchenId}</Td>
+          </Tr>
           <Tr>
             <Td>Description</Td>
             <Td>{description}</Td>

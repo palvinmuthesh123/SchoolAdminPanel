@@ -10,6 +10,7 @@ import { ProductAssignProvider } from './context/productAssign_context';
 import { KitchenProvider } from './context/kitchen_context';
 import { TruckProvider } from './context/truck_context';
 import { SchoolProvider } from './context/school_context';
+import { PathwayProvider } from './context/pathway_context';
 import { ContainerProvider } from './context/container_context';
 import { ContainerAssignProvider } from './context/containerAssign_context';
 import { TruckAssignProvider } from './context/truckAssign_context';
@@ -27,9 +28,11 @@ ReactDOM.render(
                   <ContainerAssignProvider>
                     <TruckAssignProvider>
                       <ProductAssignProvider>
-                        <ChakraProvider theme={theme}>
-                          <App />
-                        </ChakraProvider>
+                        <PathwayProvider>
+                          <ChakraProvider theme={theme}>
+                            <App />
+                          </ChakraProvider>
+                        </PathwayProvider>
                       </ProductAssignProvider>
                     </TruckAssignProvider>
                   </ContainerAssignProvider>

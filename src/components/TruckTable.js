@@ -93,14 +93,19 @@ function TrucksTable({ trucks }) {
             <Tr>
               <Th>Image</Th>
               <Th>Truck ID</Th>
-              <Th>Description</Th>
+              <Th>Truck No</Th>
+              <Th>Kitchen ID</Th>
+              <Th>Driver Name</Th>
+              <Th>Driver Number</Th>
+              <Th>Driver Email</Th>
+              <Th>Route</Th>
               <Th>QR</Th>
               <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
             {trucks ? trucks.map((truck, index) => {
-              const { image, truckId, id, description } = truck;
+              const { image, truckId, id, description, driver_name, driver_number, driver_email, route, kitchenId } = truck;
               if (!qrRefs.current[truckId]) {
                 qrRefs.current[truckId] = React.createRef();
               }
@@ -131,6 +136,32 @@ function TrucksTable({ trucks }) {
                       <Text as='b'>{description}</Text>
                     </VStack>
                   </Td>
+                  <Td>
+                    <VStack alignItems='flex-start' spacing={1}>
+                      <Text as='b'>{kitchenId}</Text>
+                    </VStack>
+                  </Td>
+                  <Td>
+                    <VStack alignItems='flex-start' spacing={1}>
+                      <Text as='b'>{driver_name}</Text>
+                    </VStack>
+                  </Td>
+                  <Td>
+                    <VStack alignItems='flex-start' spacing={1}>
+                      <Text as='b'>{driver_number}</Text>
+                    </VStack>
+                  </Td>
+                  <Td>
+                    <VStack alignItems='flex-start' spacing={1}>
+                      <Text as='b'>{driver_email}</Text>
+                    </VStack>
+                  </Td>
+                  <Td>
+                    <VStack alignItems='flex-start' spacing={1}>
+                      <Text as='b'>{route}</Text>
+                    </VStack>
+                  </Td>
+
                   <Td>
                     <div ref={qrRefs.current[truckId]}>
                       <QRCode
